@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Card, Input, Button, Space, Typography, message, Modal, Progress, Tag, Divider } from 'antd'
-import { SendOutlined, PlayCircleOutlined, CheckCircleOutlined, ClockCircleOutlined, TrophyOutlined } from '@ant-design/icons'
+import { SendOutlined, PlayCircleOutlined, CheckCircleOutlined, ClockCircleOutlined, TrophyOutlined, MessageOutlined } from '@ant-design/icons'
 import { startInterview, submitAnswer, addChatMessage, setTimeRemaining, setTimerActive } from '../store/slices/interviewSlice'
 import { getInterviewId } from '../utils/interviewUtils'
 import Timer from './Timer'
@@ -24,6 +24,9 @@ const ChatWindow = () => {
   const [startTime, setStartTime] = useState(null)
   const messagesEndRef = useRef(null)
   const timerRef = useRef(null)
+
+  // antd message context (avoids static message warning)
+  const [msgApi, contextHolder] = message.useMessage()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -54,14 +57,14 @@ const ChatWindow = () => {
     try {
       const interviewId = getInterviewId(currentInterview)
       if (!interviewId) {
-        message.error('Interview ID not found. Please try uploading your resume again.')
+        msgApi.error('Interview ID not found. Please try uploading your resume again.')
         return
       }
       await dispatch(startInterview(interviewId)).unwrap()
       setStartTime(Date.now())
-      message.success('Interview started! Good luck!')
+      msgApi.success('Interview started! Good luck!')
     } catch (error) {
-      message.error(error)
+      msgApi.error(error)
     }
   }
 
@@ -74,7 +77,7 @@ const ChatWindow = () => {
 
   const handleSubmitAnswer = async (isAuto = false) => {
     if (!answer.trim()) {
-      if (!isAuto) message.warning('Please provide an answer before submitting')
+      if (!isAuto) msgApi.warning('Please provide an answer before submitting')
       // Submit empty answer on auto to progress
       if (!isAuto) return
     }
@@ -91,7 +94,7 @@ const ChatWindow = () => {
     try {
       const interviewId = getInterviewId(currentInterview)
       if (!interviewId) {
-        message.error('Interview ID not found. Please try restarting the interview.')
+        msgApi.error('Interview ID not found. Please try restarting the interview.')
         return
       }
       
@@ -104,7 +107,7 @@ const ChatWindow = () => {
       setAnswer('')
       setStartTime(Date.now())
     } catch (error) {
-      message.error(error)
+      msgApi.error(error)
     }
   }
 
@@ -135,6 +138,7 @@ const ChatWindow = () => {
 
   return (
     <div style={{ padding: '24px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {contextHolder}
       {/* Main Header */}
       <div style={{ 
         background: '#ffffff',
